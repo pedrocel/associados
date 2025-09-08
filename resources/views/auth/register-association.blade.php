@@ -880,6 +880,7 @@
                 });
             }
             
+            
             selectType(type) {
                 // Clear previous selections
                 document.querySelectorAll('.tipo-card').forEach(card => {
