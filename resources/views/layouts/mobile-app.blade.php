@@ -69,80 +69,11 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <div class="flex h-screen relative">
-        <!-- Sidebar -->
-        <div id="sidebar" class="fixed lg:relative w-72 gradient-bg text-white flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out h-full">
-            <!-- Logo/Brand -->
-            <div class="p-6 border-b border-green-600/30">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                            <i data-lucide="zap" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg font-display font-semibold">AssociaçõesPro</h1>
-                            <p class="text-xs text-green-100">{{ auth()->user()->tipo ?? 'Cliente' }}</p>
-                        </div>
-                    </div>
-                    <button id="close-sidebar" class="lg:hidden p-2 text-green-100 hover:text-white hover:bg-white/10 rounded-lg">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
+        @include('layouts.partials.sidebar-client')
 
-            <!-- Navigation Menu -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <a href="{{ route('cliente.dashboard') }}" class="sidebar-item {{ request()->is('*dashboard*') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Dashboard</span>
-                </a>
-                
-                <a href="#" class="sidebar-item {{ request()->is('*noticias*') ? 'active' : '' }} flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-green-100 hover:text-white">
-                    <i data-lucide="newspaper" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Notícias</span>
-                </a>
-                
-                <a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-green-100 hover:text-white">
-                    <i data-lucide="file-text" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Documentos</span>
-                </a>
-                
-                <a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-green-100 hover:text-white">
-                    <i data-lucide="credit-card" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Financeiro</span>
-                </a>
-                
-                <a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-green-100 hover:text-white">
-                    <i data-lucide="calendar" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Eventos</span>
-                </a>
-                
-                <a href="#" class="sidebar-item flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-green-100 hover:text-white">
-                    <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
-                    <span>Configurações</span>
-                </a>
-            </nav>
-
-            <!-- User Profile -->
-            <div class="p-4 border-t border-green-600/30">
-                <button id="user-profile-btn" class="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-white/10 transition-colors">
-                    <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">
-                        <span class="text-sm font-semibold text-white">{{ substr(auth()->user()->name ?? 'U', 0, 1) }}</span>
-                    </div>
-                    <div class="flex-1 min-w-0 text-left">
-                        <p class="text-sm font-medium truncate">{{ auth()->user()->name ?? 'Usuário' }}</p>
-                        <p class="text-xs text-green-100 truncate">{{ auth()->user()->email ?? 'email@exemplo.com' }}</p>
-                    </div>
-                    <i data-lucide="chevron-up" class="w-4 h-4 text-green-100"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile Overlay -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
 
-        <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
             <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
@@ -173,7 +104,6 @@
                 </div>
             </header>
 
-            <!-- Main Content Area -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">
                 @yield('content')
             </main>

@@ -69,7 +69,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Recorrência:</span>
-                            <span class="font-medium capitalize">{{ $sale->plan->recurrence }}</span>
+                            <span class="font-medium capitalize">{{ $sale->plan->recurrence === 'Monthly' ? 'Mensal' : 'Anual' }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Valor:</span>
@@ -140,10 +140,11 @@
                         <span class="text-primary-600 text-sm font-semibold">3</span>
                     </div>
                     <div>
-                        <p class="font-medium text-gray-900">Acesso Liberado</p>
-                        <p class="text-sm text-gray-600">Você receberá suas credenciais de acesso por e-mail.</p>
+                        <p class="font-medium text-gray-900">Enviar documentação</p>
+                        <p class="text-sm text-gray-600">Para finalizar seu registro de associado você deve enviar a documentação solicitada pela associação.</p>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -153,11 +154,14 @@
                 <i class="fas fa-home mr-2"></i>
                 Voltar ao Início
             </a>
-            <a href="mailto:suporte@exemplo.com" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors text-center">
-                <i class="fas fa-envelope mr-2"></i>
+            <a href="https://wa.me/5511999999999?text=Olá,+preciso+de+suporte"
+            target="_blank"
+            class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center">
+                <i class="fab fa-whatsapp mr-2"></i>
                 Contatar Suporte
             </a>
         </div>
+
     </div>
 </body>
 </html>

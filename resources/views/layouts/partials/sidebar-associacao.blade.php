@@ -75,7 +75,6 @@
                         </div>
                         <span class="font-medium">Triagem</span>
                         {{-- Badge de exemplo --}}
-                        <span class="ml-auto bg-amber-500 text-amber-50 text-xs font-bold px-2 py-1 rounded-full min-w-[1.5rem] text-center">3</span>
                     </div>
                     <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-emerald-600/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-2xl"></div>
                     @if(request()->is('*documentos*'))

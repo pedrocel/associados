@@ -18,19 +18,8 @@
                         <i data-lucide="layout-dashboard" class="w-8 h-8 text-white"></i>
                     </div>
                     <div>
-                        <h1 class="text-3xl font-bold text-white mb-1">Dashboard</h1>
-                        <p class="text-emerald-100 text-lg">Bem-vindo de volta! Aqui está o resumo da sua associação</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-6 text-white/90">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-2 h-2 bg-emerald-300 rounded-full animate-pulse"></div>
-                        <span class="text-sm font-medium">Sistema Online</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="clock" class="w-4 h-4"></i>
-                        <span class="text-sm" id="current-time"></span>
+                        <h1 class="text-3xl font-bold text-white mb-1">Olá, {{ explode(' ', Auth::user()->name)[0] }}!</h1>
+                        <p class="text-emerald-100 text-lg">Aqui está o resumo da sua associação</p>
                     </div>
                 </div>
             </div>
@@ -38,11 +27,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="#" class="inline-flex items-center justify-center space-x-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 py-3 rounded-2xl font-medium transition-all duration-300 hover:scale-105 border border-white/20 group">
                     <i data-lucide="plus" class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300"></i>
-                    <span>Novo Conteúdo</span>
-                </a>
-                <a href="#" class="inline-flex items-center justify-center space-x-2 bg-white text-emerald-600 hover:bg-emerald-50 px-6 py-3 rounded-2xl font-medium transition-all duration-300 hover:scale-105 shadow-lg">
-                    <i data-lucide="download" class="w-5 h-5"></i>
-                    <span>Relatório</span>
+                    <span>Nova Notícia</span>
                 </a>
             </div>
         </div>
@@ -57,14 +42,13 @@
                 <div class="text-right">
                     <div class="flex items-center space-x-1 text-green-600 dark:text-green-400">
                         <i data-lucide="trending-up" class="w-4 h-4"></i>
-                        <span class="text-sm font-medium">+12%</span>
+                        <span class="text-sm font-medium">+0%</span>
                     </div>
                 </div>
             </div>
             <div>
                 <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Total de Usuários</p>
                 <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $totalUsers }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">+23 este mês</p>
             </div>
         </div>
 
@@ -83,7 +67,6 @@
             <div>
                 <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Membros Ativos</p>
                 <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $totalMembers }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">+15 este mês</p>
             </div>
         </div>
 
@@ -102,7 +85,6 @@
             <div>
                 <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Receita Total</p>
                 <p class="text-3xl font-bold text-slate-900 dark:text-white">R$ {{ number_format($totalRevenue, 2, ',', '.') }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">+R$ 8.450 este mês</p>
             </div>
         </div>
 
@@ -119,9 +101,8 @@
                 </div>
             </div>
             <div>
-                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Pagamentos Pendentes</p>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Aguardando confirmação</p>
                 <p class="text-3xl font-bold text-slate-900 dark:text-white">R$ {{ number_format($pendingRevenue, 2, ',', '.') }}</p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Aguardando confirmação</p>
             </div>
         </div>
     </div>
@@ -270,10 +251,16 @@
                 <div>
                     <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Planos Ativos</p>
                     <p class="text-2xl font-bold text-slate-900 dark:text-white mb-2">{{ $activePlans }} / {{ $totalPlans }}</p>
+                    
+                    @php
+                        $percentage = $totalPlans > 0 ? ($activePlans / $totalPlans) * 100 : 0;
+                    @endphp
+                    
                     <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-2">
-                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full" style="width: {{ ($activePlans / $totalPlans) * 100 }}%"></div>
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ number_format(($activePlans / $totalPlans) * 100, 0) }}% dos planos ativos</p>
+                    
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ number_format($percentage, 0) }}% dos planos ativos</p>
                 </div>
             </div>
 

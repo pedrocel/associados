@@ -85,7 +85,7 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $plan->recurrence === 'monthly' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' }}">
                                     <i data-lucide="repeat" class="w-3 h-3 mr-1"></i>
-                                    {{ ucfirst($plan->recurrence) }}
+                                    {{ ucfirst($plan->recurrence === 'monthly' ? 'Mensal' :'Anual') }}
                                 </span>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $plan->is_active ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' }}">

@@ -156,17 +156,17 @@
                         
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Recorrência:</span>
-                            <span class="font-medium text-gray-900 capitalize">{{ $plan->recurrence }}</span>
+                            <span class="font-medium text-gray-900 capitalize">{{ $plan->recurrence === 'Monthly' ? 'Cobrança mensal' : 'Cobrança anual' }}</span>
                         </div>
                         
                         <div class="flex items-center justify-between text-sm mt-2">
                             <span class="text-gray-600">Associação:</span>
-                            <span class="font-medium text-gray-900">{{ $plan->association->name ?? 'N/A' }}</span>
+                            <span class="font-medium text-gray-900">{{ $plan->association->nome ?? 'N/A' }}</span>
                         </div>
                     </div>
                     
                     <!-- Produtos Inclusos -->
-                    @if($plan->products && $plan->products->count() > 0)
+                    {{-- @if($plan->products && $plan->products->count() > 0)
                         <div class="mb-6">
                             <h5 class="font-medium text-gray-900 mb-3">Produtos Inclusos</h5>
                             <div class="space-y-2">
@@ -178,27 +178,28 @@
                                 @endforeach
                             </div>
                         </div>
-                    @endif
+                    @endif --}}
                     
                     <!-- Total -->
                     <div class="border-t border-gray-200 pt-4">
-                        <div class="flex items-center justify-between mb-2">
+                        {{-- <div class="flex items-center justify-between mb-2">
                             <span class="text-gray-600">Subtotal:</span>
                             <span class="font-medium text-gray-900">R$ {{ number_format($plan->total_price, 2, ',', '.') }}</span>
-                        </div>
+                        </div> --}}
                         <div class="flex items-center justify-between text-lg font-semibold text-gray-900">
                             <span>Total:</span>
                             <span class="text-primary-600">R$ {{ number_format($plan->total_price, 2, ',', '.') }}</span>
                         </div>
                     </div>
-                    
-                    <!-- Botão de Finalizar -->
-                    <button type="submit" 
-                            class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors mt-6 flex items-center justify-center">
-                        <i class="fas fa-lock mr-2"></i>
-                        Finalizar Compra
+                 <!-- Botão de Integração -->
+                    <button type="submmit" 
+                            class="w-full bg-white/80 backdrop-blur-sm text-neutral-800 font-bold py-4 px-6 rounded-lg border border-neutral-200 hover:bg-white hover:shadow-md transition-all duration-300 mt-6 flex items-center justify-center gap-2">
+                        <span>Finalizar pagamento com</span>
+                        <img src="https://suaformatura.com/site-assets/images/logos/logo-suaformatura.png" 
+                            alt="Sua Formatura Logo" 
+                            class="h-5">
                     </button>
-                    
+
                     <!-- Segurança -->
                     <div class="mt-4 text-center">
                         <div class="flex items-center justify-center text-sm text-gray-500">
