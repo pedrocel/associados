@@ -8,8 +8,9 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/webhook-cakto', [WebhookController::class, 'handle'])->name('webhook.handle');
-Route::post('/webhook-kiwify', [WebhookController::class, 'kiwify'])->name('webhook.kiwify');
+
+Route::post('/webhook-global', [WebhookController::class, 'global'])->name('webhook.kiwify');
+
 
 
 

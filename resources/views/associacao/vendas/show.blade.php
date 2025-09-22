@@ -125,17 +125,17 @@
                 </div>
                 <div class="space-y-2 text-gray-600 dark:text-gray-400">
                     <p class="flex justify-between items-center"><span class="font-medium">Nome:</span> <span>{{ $sale->plan->name }}</span></p>
-                    <p class="flex justify-between items-center"><span class="font-medium">Recorrência:</span> <span>{{ ucfirst($sale->plan->recurrence) }}</span></p>
+                    <p class="flex justify-between items-center"><span class="font-medium">Recorrência:</span> <span>{{ ucfirst($sale->plan->recurrence === 'Monthly' ? 'Mensal' : 'Anual') }}</span></p>
                     <p class="flex justify-between items-center"><span class="font-medium">Valor Base:</span> <span>R$ {{ number_format($sale->plan->total_price, 2, ',', '.') }}</span></p>
                     
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                    {{-- <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
                         <h4 class="font-semibold text-gray-900 dark:text-white mb-2">Produtos do Plano:</h4>
                         <ul class="list-disc list-inside text-sm space-y-1">
                             @foreach ($sale->plan->products as $product)
                                 <li>{{ $product->name }} (R$ {{ number_format($product->price, 2, ',', '.') }})</li>
                             @endforeach
                         </ul>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
             

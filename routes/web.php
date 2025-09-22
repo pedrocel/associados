@@ -307,14 +307,11 @@ Route::middleware(['auth', RedirectByProfile::class])->prefix('cliente')->group(
 
     });
 
-
     // Módulo de Documentação e Pagamento (Tela Unificada)
     Route::prefix('documentos')->name('documentos.')->group(function () {
         // Esta rota é o ponto de entrada para o cliente nos status de documentação e pagamento
-        Route::get('/', [DocumentosController::class, 'index'])->name('index');
         // Ações dentro da tela unificada
         Route::post('/upload', [DocumentosController::class, 'store'])->name('store');
-        Route::patch('/enviar-analise', [DocumentosController::class, 'submitForReview'])->name('submit-for-review');
     });
 
     Route::prefix('pagamento')->name('pagamento.')->group(function () {
@@ -331,11 +328,7 @@ Route::middleware(['auth', RedirectByProfile::class])->prefix('cliente')->group(
     });
     
     // Módulo de Contrato
-    Route::prefix('contrato')->name('contrato.')->group(function () {
-        Route::get('/', [ContratoController::class, 'index'])->name('index');
-        // Rota para a ação de assinatura do contrato
-        Route::post('/', [ContratoController::class, 'sign'])->name('sign');
-    });
+   
 
 });
 

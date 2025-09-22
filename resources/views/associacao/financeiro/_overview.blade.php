@@ -56,7 +56,27 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                            <i data-lucide="credit-card" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                            <i class="text-green-600 dark:text-green-400">
+                                @php
+                                $icon = '';
+                                switch ($sale->payment_method) {
+                                    case 'pix':
+                                        $icon = asset('img/pix.png');
+                                        break;
+                                    case 'credit_card':
+                                        $icon = asset('img/cartao.png');
+                                        break;
+                                    case 'boleto':
+                                        $icon = asset('img/boleto.png');
+                                        break;
+                                }
+                            @endphp
+                            @if($icon)
+                                <img src="{{ $icon }}" alt="{{ ucfirst($sale->payment_method) }}" title="{{ ucfirst($sale->payment_method) }}" class="w-6 h-auto">
+                            @else
+                                {{ ucfirst($sale->payment_method) }}
+                            @endif
+                            </i>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900 dark:text-white">

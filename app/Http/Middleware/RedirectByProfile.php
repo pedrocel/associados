@@ -5,11 +5,18 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use App\Services\GamificationService;
 
 class RedirectByProfile
 {
+
+    public function __construct()
+    {
+    }
+
     /**
-     * Handle an incoming request.
+     * Lida com uma requisição de entrada.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -19,24 +26,19 @@ class RedirectByProfile
     {
         $user = Auth::user();
         
+        // Se não houver usuário autenticado, permite que a requisição continue.
         if (!$user) {
             return $next($request);
         }
 
-        if($user->perfil = 'cliente'){
-            return $next($request);
-        }
-        
-        // Rotas que não devem ser redirecionadas (para evitar loops)
+        // Rotas que não devem ser redirecionadas (para evitar loops ou rotas públicas essenciais)
         $exemptRoutes = [
             'logout',
             'api/*',
-            // Incluímos todas as rotas de onboarding na lista de isentos
-            'cliente/documentos*',
-            'cliente/pagamento*',
-            'cliente/contrato*',
-            'cliente/aguarde',
-            'associacao/configuracoes*',
+            // Adicione outras rotas que nunca devem ser redirecionadas,
+            // independentemente do perfil do usuário, por exemplo:
+            // 'password/reset/*',
+            // 'register', // Se houver uma rota de registro que não deve redirecionar
         ];
 
         foreach ($exemptRoutes as $route) {
@@ -45,66 +47,45 @@ class RedirectByProfile
             }
         }
         
-        // --- Fluxo de Redirecionamento 1: Perfis de Gestão (Dono da Associacao, Admin) ---
-        // Este é o fluxo prioritário. Se o usuário tem um perfil de gestão, ele é redirecionado
-        // para sua área, independentemente do status (ativo, pendente, etc.).
-        if ($user->isAdmin() || $user->isDonoAssociacao() || $user->isModerador()) {
-            
-            $perfilAtual = $this->getPerfilAtual($user);
+        // Redireciona com base no perfil do usuário
+        $perfilAtual = $this->getPerfilAtual($user);
 
-            if (!$perfilAtual) {
-                Auth::logout();
-                return redirect('/login')->with('error', 'Usuário sem perfil ativo. Entre em contato com o administrador.');
-            }
-
-            $redirectUrl = $this->getRedirectUrlByProfile($perfilAtual->name);
-            
-            // Redireciona apenas se o usuário não está na área correta.
-            if ($redirectUrl && !$this->isAlreadyInCorrectArea($request, $perfilAtual->name)) {
-                return redirect($redirectUrl);
-            }
+        // Se o usuário não tem um perfil ativo (por alguma razão de dados), desloga e redireciona para o login.
+        if (!$perfilAtual) {
+            Auth::logout();
+            return redirect('/login')->with('error', 'Usuário sem perfil ativo. Entre em contato com o administrador.');
         }
 
-        // --- Fluxo de Redirecionamento 2: Funil de Onboarding (para Clientes/Membros) ---
-        // Este fluxo só se aplica a clientes e membros que não são administradores.
-        switch ($user->status) {
-            case 'documentation_pending':
-            case 'docs_under_review':
-                return redirect()->route('cliente.documentos.index');
-            
-            case 'payment_pending':
-                return redirect()->route('cliente.pagamento.index');
-            
-            case 'contract_pending':
-                return redirect()->route('cliente.contrato.index');
-
-            case 'ativo':
-                // Clientes ativos vão para o dashboard deles
-                return redirect()->route('cliente.dashboard');
-            
-            case 'pendente':
-            case 'inativo':
-            case 'suspensa':
-                // Clientes com status de espera vão para a tela de espera
-                return redirect()->route('associacao.dashboard');
+        $redirectUrl = $this->getRedirectUrlByProfile($perfilAtual->name);
+        
+        // Redireciona apenas se o usuário não estiver na área correta para seu perfil.
+        // Isso previne redirecionamentos desnecessários e loops.
+        if ($redirectUrl && !$this->isAlreadyInCorrectArea($request, $perfilAtual->name)) {
+            return redirect($redirectUrl);
         }
 
-        // Catch-all para qualquer caso não previsto
+        // Permite que a requisição continue se nenhum redirecionamento for necessário.
         return $next($request);
     }
 
     /**
-     * Obtém o perfil atual do usuário
+     * Obtém o perfil atual do usuário.
+     * Assume que 'perfilAtual()' ou uma relação userPerfis existe.
+     *
+     * @param \App\Models\User $user
+     * @return \App\Models\Perfil|null
      */
     private function getPerfilAtual($user)
     {
+        // Prioriza o método perfilAtual() se ele existir no modelo User
         if (method_exists($user, 'perfilAtual')) {
             return $user->perfilAtual();
         }
 
+        // Fallback: Tenta encontrar o perfil atual através da relação userPerfis
+        // Removido o where('status', 1) conforme solicitado, mantendo apenas is_atual
         $userPerfil = $user->userPerfis()
             ->where('is_atual', 1)
-            ->where('status', 1)
             ->with('perfil')
             ->first();
 
@@ -112,7 +93,10 @@ class RedirectByProfile
     }
 
     /**
-     * Retorna a URL de redirecionamento baseada no perfil
+     * Retorna a URL de redirecionamento baseada no nome do perfil.
+     *
+     * @param string $perfilName
+     * @return string|null
      */
     private function getRedirectUrlByProfile($perfilName)
     {
@@ -124,20 +108,26 @@ class RedirectByProfile
             'Moderador' => '/moderador/dashboard'
         ];
 
+        // Retorna a URL mapeada ou '/dashboard' como um padrão genérico
         return $redirectMap[$perfilName] ?? '/dashboard';
     }
 
     /**
-     * Verifica se o usuário já está na área correta
+     * Verifica se o usuário já está na área correta com base no padrão da URL.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $perfilName
+     * @return bool
      */
-    private function isAlreadyInCorrectArea($request, $perfilName)
+    private function isAlreadyInCorrectArea(Request $request, $perfilName)
     {
         $areaMap = [
             'Administrador' => 'admin/*',
             'Cliente' => 'cliente/*',
             'Associacao' => 'associacao/*',
             'Membro' => 'membro/*',
-            'Moderador' => 'moderador/*'
+            'Moderador' => 'moderador/*',
+            // Adicione aqui outros perfis e seus padrões de rota
         ];
 
         $pattern = $areaMap[$perfilName] ?? null;

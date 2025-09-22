@@ -305,7 +305,6 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Desempenho Detalhado dos Planos</h3>
-            <button class="text-sm text-blue-600 hover:text-blue-700">Ver Todos</button>
         </div>
         
         <div class="overflow-x-auto">
