@@ -9,20 +9,27 @@ use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
-    public function index()
-    {
-        $associationId = auth()->user()->association_id;
-        
-        // Buscar as últimas notícias para exibir no dashboard
-        $news = News::with('author')
-                   ->where('association_id', $associationId)
-                   ->where('status', 'published')
-                   ->latest()
-                   ->take(6)
-                   ->get();
-
-        return view('cliente.dashboard-mobile', compact('news'));
+        public function index()
+        {
+            $user = auth()->user();
+    
+            if ($user->status !== 'ativo') {
+                return redirect()->route('cliente.documentos.index')
+                               ->with('warning', 'Por favor, complete a documentação necessária para continuar.');
+            }
+    
+            $associationId = $user->association_id;
+            
+    
+            $news = News::with('author')
+                       ->where('association_id', $associationId)
+                       ->latest()
+                       ->take(6)
+                       ->get();
+    
+            return view('cliente.dashboard-mobile', compact('news', 'user'));
     }
+    
 
     public function profile()
     {

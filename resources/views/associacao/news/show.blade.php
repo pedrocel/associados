@@ -1,301 +1,176 @@
 @extends('layouts.app')
 
+@section('title', $news->title . ' - Portal de Notícias')
+
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
-        <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                    <a href="{{ route('associacao.news.index') }}" 
-                       class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
-                        Voltar às Notícias
-                    </a>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <a href="{{ route('associacao.news.edit', $news) }}" 
-                       class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
-                        Editar
-                    </a>
-                    <form action="{{ route('associacao.news.destroy', $news) }}" method="POST" class="inline-block">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" 
-                                onclick="return confirm('Tem certeza que deseja excluir esta notícia?')"
-                                class="inline-flex items-center px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
-                            Excluir
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Status e Ações Rápidas -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        {{ $news->status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
-                           ($news->status === 'draft' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
-                           'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200') }}">
-                        <i data-lucide="{{ $news->status === 'published' ? 'eye' : ($news->status === 'draft' ? 'edit' : 'archive') }}" 
-                           class="w-3 h-3 mr-1"></i>
-                        {{ ucfirst($news->status) }}
-                    </span>
-
-                    @if($news->is_featured)
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                            <i data-lucide="star" class="w-3 h-3 mr-1"></i>
-                            Destaque
-                        </span>
-                    @endif
-
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                        <i data-lucide="eye" class="w-4 h-4 inline mr-1"></i>
-                        {{ $news->views }} visualizações
-                    </span>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    @if($news->status === 'draft')
-                        <form action="{{ route('associacao.news.toggle-publish', $news) }}" method="POST" class="inline-block">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" 
-                                    class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors">
-                                <i data-lucide="send" class="w-3 h-3 mr-1"></i>
-                                Publicar
-                            </button>
-                        </form>
-                    @elseif($news->status === 'published')
-                        <form action="{{ route('associacao.news.toggle-publish', $news) }}" method="POST" class="inline-block">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" 
-                                    class="inline-flex items-center px-3 py-1.5 bg-yellow-600 text-white text-xs font-medium rounded hover:bg-yellow-700 transition-colors">
-                                <i data-lucide="eye-off" class="w-3 h-3 mr-1"></i>
-                                Despublicar
-                            </button>
-                        </form>
-                    @endif
-
-                    @if($news->is_featured)
-                        <form action="{{ route('associacao.news.toggle-featured', $news) }}" method="POST" class="inline-block">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" 
-                                    class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded hover:bg-gray-700 transition-colors">
-                                <i data-lucide="star-off" class="w-3 h-3 mr-1"></i>
-                                Remover Destaque
-                            </button>
-                        </form>
-                    @else
-                        <form action="{{ route('associacao.news.toggle-featured', $news) }}" method="POST" class="inline-block">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" 
-                                    class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors">
-                                <i data-lucide="star" class="w-3 h-3 mr-1"></i>
-                                Destacar
-                            </button>
-                        </form>
-                    @endif
-                </div>
-            </div>
+<div class="max-w-6xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="mb-6">
+        <div class="flex items-center space-x-2 text-sm">
+            <a href="{{ route('associacao.news.index') }}" class="text-green-600 dark:text-green-400 hover:underline flex items-center space-x-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Voltar às Notícias</span>
+            </a>
         </div>
     </div>
 
-    <!-- Conteúdo Principal -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Artigo -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Conteúdo Principal -->
         <div class="lg:col-span-2">
-            <article class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <article class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-lg">
                 <!-- Imagem Destacada -->
                 @if($news->featured_image)
-                    <div class="aspect-video w-full overflow-hidden rounded-t-lg">
+                    <div class="aspect-video w-full overflow-hidden bg-gray-100 dark:bg-gray-700">
                         <img src="{{ Storage::url($news->featured_image) }}" 
                              alt="{{ $news->title }}"
                              class="w-full h-full object-cover">
                     </div>
                 @endif
 
-                <div class="p-6">
+                <div class="p-8 lg:p-10">
+                    <!-- Badges e Status -->
+                    <div class="flex flex-wrap items-center gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+                        @if($news->is_featured)
+                            <span class="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                <i data-lucide="star" class="w-3 h-3"></i>
+                                <span>DESTAQUE</span>
+                            </span>
+                        @endif
+                        <span class="px-3 py-1 rounded-full text-xs font-bold
+                            {{ $news->status === 'published' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 
+                               'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' }}">
+                            {{ $news->status === 'published' ? 'Publicado' : 'Rascunho' }}
+                        </span>
+                    </div>
+
                     <!-- Título -->
-                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                    <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
                         {{ $news->title }}
                     </h1>
 
-                    <!-- Meta Informações -->
-                    <div class="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center">
-                            <i data-lucide="user" class="w-4 h-4 mr-2"></i>
-                            {{ $news->author->name }}
-                        </div>
-                        <div class="flex items-center">
-                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
-                            {{ $news->published_at ? $news->published_at->format('d/m/Y H:i') : $news->created_at->format('d/m/Y H:i') }}
-                        </div>
-                        <div class="flex items-center">
-                            <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
-                            {{ $news->reading_time }} min de leitura
+                    <!-- Meta Informações do Autor -->
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                <span>{{ $news->published_at ? $news->published_at->format('d \d\e M \d\e Y') : $news->created_at->format('d \d\e M \d\e Y') }}</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="clock" class="w-4 h-4"></i>
+                                <span>{{ $news->reading_time ?? '5' }} min de leitura</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                <span>{{ $news->views_count ?? 0 }} visualizações</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Resumo -->
-                    @if($news->summary)
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-                            <p class="text-gray-700 dark:text-gray-300 font-medium">
-                                {{ $news->summary }}
-                            </p>
-                        </div>
-                    @endif
-
-                    <!-- Conteúdo -->
-                    <div class="prose prose-lg max-w-none dark:prose-invert">
+                    <!-- Conteúdo Principal -->
+                    <div class="prose prose-lg max-w-none dark:prose-invert
+                        [&>h1]:text-gray-900 dark:[&>h1]:text-white [&>h1]:font-bold [&>h1]:mt-8 [&>h1]:mb-4
+                        [&>h2]:text-gray-800 dark:[&>h2]:text-gray-100 [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4
+                        [&>h3]:text-gray-800 dark:[&>h3]:text-gray-100 [&>h3]:font-semibold [&>h3]:mt-6 [&>h3]:mb-3
+                        [&>p]:text-gray-700 dark:[&>p]:text-gray-300 [&>p]:leading-relaxed [&>p]:mb-4
+                        [&>ul]:text-gray-700 dark:[&>ul]:text-gray-300 [&>ul]:space-y-2 [&>ul]:mb-4
+                        [&>ol]:text-gray-700 dark:[&>ol]:text-gray-300 [&>ol]:space-y-2 [&>ol]:mb-4
+                        [&>blockquote]:border-l-4 [&>blockquote]:border-green-500 [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-gray-700 dark:[&>blockquote]:text-gray-300
+                        [&>a]:text-green-600 dark:[&>a]:text-green-400 [&>a]:font-medium [&>a]:hover:underline">
                         {!! $news->content !!}
                     </div>
 
                     <!-- Tags -->
                     @if($news->tags && count($news->tags) > 0)
-                        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Tags:</h3>
+                        <div class="mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
+                            <h3 class="text-sm font-bold uppercase tracking-wide text-gray-900 dark:text-white mb-4">Tags da Notícia</h3>
                             <div class="flex flex-wrap gap-2">
                                 @foreach($news->tags as $tag)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                        <i data-lucide="tag" class="w-3 h-3 mr-1"></i>
-                                        {{ $tag }}
-                                    </span>
+                                    <a href="{{ route('associacao.news.index', ['search' => $tag]) }}"
+                                       class="inline-flex items-center space-x-1 px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 transition-colors hover:bg-blue-200 dark:hover:bg-blue-900/50">
+                                        <i data-lucide="tag" class="w-4 h-4"></i>
+                                        <span>{{ $tag }}</span>
+                                    </a>
                                 @endforeach
                             </div>
                         </div>
                     @endif
                 </div>
             </article>
+
+            <!-- Notícias Relacionadas -->
+           
         </div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar Direita -->
         <div class="space-y-6">
-            <!-- Informações da Notícia -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    <i data-lucide="info" class="w-5 h-5 inline mr-2"></i>
-                    Informações
+            <!-- Card de Informações -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 sticky top-6">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                    <i data-lucide="info" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                    <span>Informações</span>
                 </h3>
-                <div class="space-y-3">
+                
+                <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Criado em:</span>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ $news->created_at->format('d/m/Y H:i') }}
-                        </span>
+                        <span class="text-gray-600 dark:text-gray-400">Criado em:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ $news->created_at->format('d/m/Y') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Atualizado em:</span>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ $news->updated_at->format('d/m/Y H:i') }}
-                        </span>
-                    </div>
-                    @if($news->published_at)
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-500 dark:text-gray-400">Publicado em:</span>
-                            <span class="text-sm font-medium text-gray-900 dark:text-white">
-                                {{ $news->published_at->format('d/m/Y H:i') }}
-                            </span>
-                        </div>
-                    @endif
-                    <div class="flex justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Visualizações:</span>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ number_format($news->views) }}
-                        </span>
+                        <span class="text-gray-600 dark:text-gray-400">Atualizado em:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ $news->updated_at->format('d/m/Y') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Slug:</span>
-                        <span class="text-sm font-mono text-gray-900 dark:text-white">
-                            {{ $news->slug }}
-                        </span>
+                        <span class="text-gray-600 dark:text-gray-400">Palavras:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ str_word_count(strip_tags($news->content)) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Tempo leitura:</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ $news->reading_time ?? '5' }} min</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Preview Público -->
-            @if($news->status === 'published')
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                        <i data-lucide="external-link" class="w-5 h-5 inline mr-2"></i>
-                        Preview Público
-                    </h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Veja como esta notícia aparece para os clientes:
-                    </p>
-                    <a href="#" 
-                       target="_blank"
-                       class="inline-flex items-center w-full justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
-                        <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
-                        Ver como Cliente
-                    </a>
-                </div>
-            @endif
-
-            <!-- Ações Rápidas -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    <i data-lucide="zap" class="w-5 h-5 inline mr-2"></i>
-                    Ações Rápidas
+            <!-- Compartilhar -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                    <i data-lucide="share-2" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                    <span>Compartilhar</span>
                 </h3>
+                
                 <div class="space-y-2">
-                    <a href="{{ route('associacao.news.edit', $news) }}" 
-                       class="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <i data-lucide="edit" class="w-4 h-4 mr-3"></i>
-                        Editar Notícia
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(route('associacao.news.show', $news)) }}" 
+                       target="_blank"
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 transition-colors hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                        <i data-lucide="facebook" class="w-5 h-5"></i>
+                        <span class="font-medium">Facebook</span>
                     </a>
-                    <a href="{{ route('associacao.news.create') }}" 
-                       class="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <i data-lucide="plus" class="w-4 h-4 mr-3"></i>
-                        Nova Notícia
+                    <a href="https://twitter.com/intent/tweet?url={{ urlencode(route('associacao.news.show', $news)) }}&text={{ urlencode($news->title) }}" 
+                       target="_blank"
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 transition-colors hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-900/20">
+                        <i data-lucide="twitter" class="w-5 h-5"></i>
+                        <span class="font-medium">Twitter</span>
                     </a>
-                    <a href="{{ route('associacao.news.index') }}" 
-                       class="flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                        <i data-lucide="list" class="w-4 h-4 mr-3"></i>
-                        Todas as Notícias
-                    </a>
+                    <button onclick="copyToClipboard('{{ route('associacao.news.show', $news) }}')"
+                       class="w-full flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-left">
+                        <i data-lucide="link" class="w-5 h-5"></i>
+                        <span class="font-medium">Copiar Link</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Estatísticas -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    <i data-lucide="bar-chart" class="w-5 h-5 inline mr-2"></i>
-                    Estatísticas
+            <!-- Ações -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+                    <i data-lucide="zap" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
+                    <span>Ações</span>
                 </h3>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Palavras</span>
-                        </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ str_word_count(strip_tags($news->content)) }}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Caracteres</span>
-                        </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ strlen(strip_tags($news->content)) }}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Tempo de leitura</span>
-                        </div>
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                            {{ $news->reading_time }} min
-                        </span>
-                    </div>
+                
+                <div class="space-y-2">
+                    <a href="{{ route('associacao.news.index') }}" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <i data-lucide="list" class="w-5 h-5"></i>
+                        <span>Todas as Notícias</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -304,16 +179,16 @@
 
 @push('scripts')
 <script>
-    // Confirmar exclusão
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Link copiado com sucesso!');
+        }).catch(() => {
+            alert('Erro ao copiar o link');
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        const deleteForm = document.querySelector('form[action*="destroy"]');
-        if (deleteForm) {
-            deleteForm.addEventListener('submit', function(e) {
-                if (!confirm('Tem certeza que deseja excluir esta notícia? Esta ação não pode ser desfeita.')) {
-                    e.preventDefault();
-                }
-            });
-        }
+        lucide.createIcons();
     });
 </script>
 @endpush

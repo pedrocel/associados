@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Associacao\DashboardController; // <-- Ensure this line is present and correct
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Associacao\PageController;
 use App\Http\Controllers\Cliente\DashboardController as ClienteDashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\ProductController as ProductLibraryController;
@@ -43,6 +44,8 @@ use App\Http\Middleware\RedirectByProfile;
 use App\Http\Controllers\SubscriptionController;
 use App\Models\PlanModel;   
 
+
+Route::get('/page/{slug}', [PublicPageController::class, 'showAssociationLp'])->name('lp.show');
 
 Route::get('/page/{slug}', [PublicPageController::class, 'showAssociationLp'])->name('lp.show');
 
@@ -90,6 +93,20 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', RedirectByProfile::class])->prefix('associacao')->group(function () {
+
+
+
+    Route::prefix('/{slug}/pages')->name('associations.pages.')->group(function () {
+        Route::get('/', [PageController::class, 'index'])->name('index');
+        Route::get('/create', [PageController::class, 'create'])->name('create');
+        Route::post('/', [PageController::class, 'store'])->name('store');
+        Route::get('/{page}/edit', [PageController::class, 'edit'])->name('edit');
+        Route::put('/{page}', [PageController::class, 'update'])->name('update');
+        Route::delete('/{page}', [PageController::class, 'destroy'])->name('destroy');
+        Route::post('/import', [PageController::class, 'import'])->name('import');
+        Route::get('/{page}/preview', [PageController::class, 'preview'])->name('preview');
+        Route::post('/{page}/toggle-publish', [PageController::class, 'togglePublish'])->name('toggle-publish');
+    });
 
     Route::get('/inicio', [DashboardController::class, 'index'])->name('associacao.dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -296,39 +313,20 @@ Route::middleware(['auth', RedirectByProfile::class])->prefix('admin')->group(fu
 Route::middleware(['auth', RedirectByProfile::class])->prefix('cliente')->group(function () {
     Route::get('dashboard', [ClienteNewsController::class, 'index'])->name('cliente.dashboard');
 
-    // Tela de espera para status não tratados
     Route::get('/aguarde', [ClienteController::class, 'wait'])->name('cliente.wait');
 
-    // Módulo de Documentação (o cliente envia documentos)
-    Route::prefix('documentos')->name('cliente.documentos.')->group(function () {
-        Route::get('/', [DocumentosController::class, 'index'])->name('index');
-        Route::post('/', [DocumentosController::class, 'store'])->name('store');
-        Route::patch('/enviar-analise', [DocumentosController::class, 'submitForReview'])->name('submit-for-review');
-
-    });
-
-    // Módulo de Documentação e Pagamento (Tela Unificada)
     Route::prefix('documentos')->name('documentos.')->group(function () {
-        // Esta rota é o ponto de entrada para o cliente nos status de documentação e pagamento
-        // Ações dentro da tela unificada
         Route::post('/upload', [DocumentosController::class, 'store'])->name('store');
     });
-
     Route::prefix('pagamento')->name('pagamento.')->group(function () {
-        // A rota 'store' para processar a mudança de método de pagamento
         Route::post('/store', [PagamentoController::class, 'store'])->name('store');
     });
-    
-
-    // Módulo de Pagamento
     Route::prefix('pagamento')->name('cliente.pagamento.')->group(function () {
         Route::get('/', [PagamentoController::class, 'index'])->name('index');
-        // Ação de pagamento, que levará ao checkout
         Route::post('/', [PagamentoController::class, 'store'])->name('store');
     });
+
     
-    // Módulo de Contrato
-   
 
 });
 

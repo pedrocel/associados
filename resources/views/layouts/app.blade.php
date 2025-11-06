@@ -63,6 +63,8 @@
                 opacity: 0;
             }
         }
+
+        
     </style>
     @stack('styles')
 </head>
@@ -130,45 +132,13 @@
                 </div>
                 
                 <div class="text-center mb-6">
-                    <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-20 h-20 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span class="text-2xl font-semibold text-white">{{ auth()->user()->iniciais ?? 'U' }}</span>
                     </div>
                     <h4 class="text-xl font-semibold text-gray-900 dark:text-white">{{ auth()->user()->name ?? 'Usuário' }}</h4>
                     <p class="text-gray-500 dark:text-gray-400">{{ auth()->user()->perfil_atual_nome ?? 'Sem perfil' }}</p>
-                </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->email ?? 'email@exemplo.com' }}</p>
 
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Informações Pessoais</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->email ?? 'email@exemplo.com' }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Alterar Senha</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Última alteração há 30 dias</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <i data-lucide="bell" class="w-5 h-5 text-gray-400"></i>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Notificações</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Gerenciar preferências</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
-                        <i data-lucide="shield" class="w-5 h-5 text-gray-400"></i>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Privacidade</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Configurações de segurança</p>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">

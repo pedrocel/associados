@@ -1,421 +1,268 @@
 @extends('layouts.app')
 
+@section('title', 'Criar Nova Notícia - Portal de Notícias')
+
 @section('content')
-<div class="space-y-6">
-    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6 border border-green-100 dark:border-gray-600">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                    <i data-lucide="plus" class="w-6 h-6 text-white"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Nova Notícia
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Preencha os dados para criar uma nova notícia
-                    </p>
-                </div>
-            </div>
-            <a href="{{ route('associacao.news.index') }}" 
-               class="inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors">
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center space-x-3 mb-4">
+            <a href="{{ route('associacao.news.index') }}" class="text-green-600 dark:text-green-400 hover:underline flex items-center space-x-1">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
                 <span>Voltar</span>
             </a>
         </div>
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Criar Nova Notícia</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Compartilhe informações importantes com os membros da sua associação</p>
     </div>
 
-    <form action="{{ route('associacao.news.store') }}" 
-          method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ route('associacao.news.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Coluna Principal -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Card - Informações Básicas -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="file-text" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalhes da Notícia</h3>
-                        </div>
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-4">
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                            <span>Informações Básicas</span>
+                        </h2>
                     </div>
+                    
                     <div class="p-6 space-y-6">
+                        <!-- Título -->
                         <div>
-                            <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Título da Notícia *
+                            <label for="title" class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Título da Notícia <span class="text-red-500">*</span>
                             </label>
                             <input type="text" 
-                                   id="title" 
+                                   id="title"
                                    name="title" 
                                    value="{{ old('title') }}"
-                                   required
-                                   maxlength="255"
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-lg font-medium transition-all @error('title') border-red-500 focus:ring-red-500 @enderror"
-                                   placeholder="Digite o título da notícia...">
+                                   placeholder="Digite um título atrativo e informativo"
+                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all"
+                                   required>
                             @error('title')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
+                        <!-- Resumo -->
                         <div>
-                            <label for="excerpt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Resumo *
+                            <label for="summary" class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Resumo (Excerpt) <span class="text-red-500">*</span>
                             </label>
-                            <textarea id="excerpt" 
-                                      name="excerpt" 
-                                      rows="3" 
-                                      required
-                                      maxlength="500"
-                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none transition-all @error('excerpt') border-red-500 focus:ring-red-500 @enderror"
-                                      placeholder="Escreva um breve resumo da notícia...">{{ old('excerpt') }}</textarea>
-                            <div class="flex justify-between mt-1">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">
-                                    Este resumo aparecerá na timeline de notícias
-                                </span>
-                                <span id="excerpt-counter" class="text-xs text-gray-500 dark:text-gray-400">
-                                    0/500
-                                </span>
-                            </div>
-                            @error('excerpt')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            <textarea id="summary"
+                                      name="summary" 
+                                      rows="2"
+                                      placeholder="Escreva um resumo breve que aparecerá na listagem"
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all resize-none"
+                                      required>{{ old('summary') }}</textarea>
+                            @error('summary')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                    </div>
-                </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="edit-3" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Conteúdo</h3>
-                        </div>
-                    </div>
-                    <div class="p-6">
+                        <!-- Conteúdo -->
                         <div>
-                            <div class="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                                <div class="bg-gray-50 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600 p-2">
-                                    <div class="flex flex-wrap gap-1">
-                                        <button type="button" onclick="formatText('bold')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Negrito">
-                                            <i data-lucide="bold" class="w-4 h-4"></i>
-                                        </button>
-                                        <button type="button" onclick="formatText('italic')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Itálico">
-                                            <i data-lucide="italic" class="w-4 h-4"></i>
-                                        </button>
-                                        <button type="button" onclick="formatText('underline')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Sublinhado">
-                                            <i data-lucide="underline" class="w-4 h-4"></i>
-                                        </button>
-                                        <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                                        <button type="button" onclick="formatText('insertUnorderedList')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Lista">
-                                            <i data-lucide="list" class="w-4 h-4"></i>
-                                        </button>
-                                        <button type="button" onclick="formatText('insertOrderedList')" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Lista Numerada">
-                                            <i data-lucide="list-ordered" class="w-4 h-4"></i>
-                                        </button>
-                                        <div class="w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                                        <button type="button" onclick="insertLink()" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" title="Link">
-                                            <i data-lucide="link" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div id="content-editor" 
-                                     contenteditable="true" 
-                                     class="min-h-[400px] p-4 focus:outline-none dark:bg-gray-700 dark:text-white"
-                                     style="max-height: 600px; overflow-y: auto;"
-                                     placeholder="Escreva o conteúdo da notícia aqui...">{{ old('content') }}</div>
-                                
-                                <textarea id="content" name="content" class="hidden" required>{{ old('content') }}</textarea>
-                            </div>
+                            <label for="content" class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Conteúdo da Notícia <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="content"
+                                      name="content" 
+                                      rows="10"
+                                      placeholder="Digite o conteúdo completo da notícia aqui... Você pode usar formatação HTML básica."
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-all font-mono text-sm resize-none"
+                                      required>{{ old('content') }}</textarea>
                             @error('content')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="space-y-6">
+                <!-- Card - Mídia -->
                 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="check-square" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Publicação</h3>
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-4">
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="image" class="w-5 h-5"></i>
+                            <span>Imagem Destacada</span>
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center transition-colors hover:border-green-500 cursor-pointer" onclick="document.getElementById('featured_image').click()">
+                                <div id="image-preview" class="mb-4">
+                                    <i data-lucide="upload-cloud" class="w-12 h-12 text-gray-400 mx-auto"></i>
+                                </div>
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">Clique ou arraste uma imagem</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF até 5MB</p>
+                            </div>
+                            
+                            <input type="file" 
+                                   id="featured_image"
+                                   name="featured_image" 
+                                   accept="image/*"
+                                   class="hidden"
+                                   onchange="previewImage(event)">
+                            
+                            @error('featured_image')
+                                <p class="text-red-500 text-sm">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
+                </div>
+
+                <!-- Card - Configurações de Publicação -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4">
+                        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                            <span>Configurações</span>
+                        </h2>
+                    </div>
+                    
                     <div class="p-6 space-y-4">
+                        <!-- Status -->
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Status
+                            <label for="status" class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Status <span class="text-red-500">*</span>
                             </label>
-                            <select id="status" name="status"
-                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all">
-                                <option value="draft" {{ old('status', 'draft') === 'draft' ? 'selected' : '' }}>Rascunho</option>
-                                <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Publicada</option>
+                            <select id="status"
+                                    name="status" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
+                                    required>
+                                <option value="draft" {{ old('status') === 'draft' ? 'selected' : '' }}>Rascunho</option>
+                                <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Publicado</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="published_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Data de Publicação
-                            </label>
-                            <input type="datetime-local" id="published_at" name="published_at"
-                                   value="{{ old('published_at', now()->format('Y-m-d\TH:i')) }}"
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-all">
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Deixe em branco para publicar imediatamente.
-                            </p>
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="is_featured" name="is_featured" value="1"
+
+                        <!-- Destaque -->
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" 
+                                   id="is_featured"
+                                   name="is_featured" 
+                                   value="1"
                                    {{ old('is_featured') ? 'checked' : '' }}
-                                   class="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                            <label for="is_featured" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Notícia em destaque
+                                   class="w-5 h-5 text-green-600 rounded focus:ring-green-500 cursor-pointer dark:bg-gray-700 dark:border-gray-600">
+                            <label for="is_featured" class="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                Adicionar em Destaque
                             </label>
                         </div>
-                    </div>
-                </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="image" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Imagem Destacada</h3>
-                        </div>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <div id="image-preview" class="hidden">
-                            <img id="preview-img" src="/placeholder.svg" alt="Preview" class="w-full h-48 object-cover rounded-lg shadow">
-                            <button type="button" onclick="removeImage()" class="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 flex items-center space-x-1">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                <span>Remover imagem</span>
-                            </button>
-                        </div>
-                        <div id="image-upload" class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                            <input type="file" id="featured_image" name="featured_image" accept="image/*" class="hidden" onchange="previewImage(this)">
-                            <label for="featured_image" class="cursor-pointer">
-                                <i data-lucide="upload" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Clique para selecionar uma imagem
-                                </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                    PNG, JPG até 2MB
-                                </p>
-                            </label>
-                        </div>
-                        @error('featured_image')
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="tags" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tags</h3>
-                        </div>
-                    </div>
-                    <div class="p-6 space-y-4">
+                        <!-- Categoria -->
                         <div>
-                            <input type="text" id="tag-input" placeholder="Digite uma tag e pressione Enter"
-                                   class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
+                            <label for="category" class="block text-sm font-bold text-gray-900 dark:text-white mb-2">
+                                Categoria
+                            </label>
+                            <select id="category"
+                                    name="category" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all">
+                                <option value="">Selecione uma categoria</option>
+                                <option value="Notícia" {{ old('category') === 'Notícia' ? 'selected' : '' }}>Notícia</option>
+                                <option value="Evento" {{ old('category') === 'Evento' ? 'selected' : '' }}>Evento</option>
+                                <option value="Comunicado" {{ old('category') === 'Comunicado' ? 'selected' : '' }}>Comunicado</option>
+                                <option value="Aviso" {{ old('category') === 'Aviso' ? 'selected' : '' }}>Aviso</option>
+                            </select>
                         </div>
-                        <div id="selected-tags" class="flex flex-wrap gap-2"></div>
-                        <input type="hidden" id="tags" name="tags" value="{{ old('tags') }}">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            Pressione Enter para adicionar uma tag
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center space-x-2">
-                            <i data-lucide="link" class="w-5 h-5 text-green-600 dark:text-green-400"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">URL da Notícia</h3>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex">
-                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
-                                {{ url('/') }}/noticias/
-                            </span>
-                            <input type="text" id="slug" name="slug"
-                                   value="{{ old('slug') }}"
-                                   class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-r-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                                   placeholder="url-da-noticia">
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Deixe em branco para gerar automaticamente.
-                        </p>
-                        @error('slug')
-                            <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                        @enderror
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex flex-col sm:flex-row gap-4 justify-end">
-                <a href="{{ route('associacao.news.index') }}" 
-                   class="inline-flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                    <span>Cancelar</span>
-                </a>
-                <button type="submit" 
-                        class="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 hover:transform hover:scale-105 shadow-lg hover:shadow-xl">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Criar Notícia</span>
-                </button>
+            <!-- Coluna Sidebar -->
+            <div class="space-y-6">
+                <!-- Card - Ações Rápidas -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden sticky top-6">
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-4">
+                        <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                            <span>Ações</span>
+                        </h2>
+                    </div>
+                    
+                    <div class="p-6 space-y-3">
+                        <button type="submit" 
+                                class="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-lg transition-all shadow-lg hover:shadow-xl text-center flex items-center justify-center space-x-2">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            <span>Criar Notícia</span>
+                        </button>
+
+                        <a href="{{ route('associacao.news.index') }}" 
+                           class="w-full py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-bold rounded-lg transition-all text-center flex items-center justify-center space-x-2">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                            <span>Cancelar</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card - Dicas -->
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 overflow-hidden">
+                    <div class="px-6 py-4">
+                        <h3 class="text-lg font-bold text-blue-900 dark:text-blue-200 flex items-center space-x-2">
+                            <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                            <span>Dicas</span>
+                        </h3>
+                    </div>
+                    
+                    <div class="px-6 pb-6 space-y-3 text-sm text-blue-800 dark:text-blue-300">
+                        <p class="flex items-start space-x-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Use um título claro e descritivo</span>
+                        </p>
+                        <p class="flex items-start space-x-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Adicione uma imagem para mais impacto</span>
+                        </p>
+                        <p class="flex items-start space-x-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Escreva um resumo envolvente</span>
+                        </p>
+                        <p class="flex items-start space-x-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                            <span>Revise antes de publicar</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card - Informações -->
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800 overflow-hidden">
+                    <div class="px-6 py-4">
+                        <h3 class="text-lg font-bold text-green-900 dark:text-green-200 flex items-center space-x-2">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                            <span>Info</span>
+                        </h3>
+                    </div>
+                    
+                    <div class="px-6 pb-6 space-y-2 text-sm text-green-800 dark:text-green-300">
+                        <p>Publique notícias para manter seus associados informados sobre eventos, comunicados e atualizações importantes.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </form>
 </div>
-@endsection
 
 @push('scripts')
 <script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('image-preview');
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" class="max-h-40 mx-auto rounded-lg">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
-        // JavaScript logic for create view
-        // ------------------ Contador de caracteres do resumo ------------------
-        const excerptTextarea = document.getElementById('excerpt');
-        const excerptCounter = document.getElementById('excerpt-counter');
-        function updateExcerptCounter() {
-            const length = excerptTextarea.value.length;
-            excerptCounter.textContent = `${length}/500`;
-            excerptCounter.className = length > 450 ? 'text-xs text-red-500' : 'text-xs text-gray-500 dark:text-gray-400';
-        }
-        if (excerptTextarea) {
-            excerptTextarea.addEventListener('input', updateExcerptCounter);
-            updateExcerptCounter();
-        }
-
-        // ------------------ Geração automática de slug ------------------
-        const titleInput = document.getElementById('title');
-        const slugInput = document.getElementById('slug');
-        if (titleInput && slugInput) {
-            slugInput.dataset.manual = '';
-            titleInput.addEventListener('input', function() {
-                if (!slugInput.dataset.manual) {
-                    const slug = this.value
-                        .toLowerCase()
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .replace(/[^a-z0-9\s-]/g, '')
-                        .replace(/\s+/g, '-')
-                        .replace(/-+/g, '-')
-                        .trim('-');
-                    slugInput.value = slug;
-                }
-            });
-            slugInput.addEventListener('input', function() {
-                this.dataset.manual = 'true';
-            });
-        }
-        
-        // ------------------ Editor de conteúdo ------------------
-        const contentEditor = document.getElementById('content-editor');
-        const contentTextarea = document.getElementById('content');
-        if (contentEditor && contentTextarea) {
-            contentEditor.addEventListener('input', function() {
-                contentTextarea.value = this.innerHTML;
-            });
-        }
-
-        // ------------------ Sistema de tags ------------------
-        const tagInput = document.getElementById('tag-input');
-        const selectedTagsDiv = document.getElementById('selected-tags');
-        const tagsHiddenInput = document.getElementById('tags');
-        let tags = [];
-        if (tagsHiddenInput && tagsHiddenInput.value) {
-            try {
-                const existingTags = JSON.parse(tagsHiddenInput.value);
-                if (Array.isArray(existingTags)) {
-                    tags = existingTags;
-                }
-            } catch (e) {
-                console.error("Erro ao parsear as tags existentes:", e);
-            }
-        }
-        renderTags();
-        if (tagInput) {
-            tagInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const tag = this.value.trim();
-                    if (tag && !tags.includes(tag)) {
-                        tags.push(tag);
-                        renderTags();
-                        this.value = '';
-                    }
-                }
-            });
-        }
-        
-        window.removeTag = function(index) {
-            tags.splice(index, 1);
-            renderTags();
-        };
-
-        function renderTags() {
-            if (selectedTagsDiv && tagsHiddenInput) {
-                selectedTagsDiv.innerHTML = '';
-                tags.forEach((tag, index) => {
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                    tagElement.innerHTML = `
-                        ${tag}
-                        <button type="button" onclick="removeTag(${index})" class="ml-2 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200">
-                            <i data-lucide="x" class="w-3 h-3"></i>
-                        </button>
-                    `;
-                    selectedTagsDiv.appendChild(tagElement);
-                });
-                tagsHiddenInput.value = JSON.stringify(tags);
-                lucide.createIcons();
-            }
-        }
-
-        // ------------------ Funções do editor ------------------
-        window.formatText = function(command) {
-            document.execCommand(command, false, null);
-            document.getElementById('content-editor').focus();
-        };
-        window.insertLink = function() {
-            const url = prompt('Digite a URL do link:');
-            if (url) {
-                document.execCommand('createLink', false, url);
-            }
-            document.getElementById('content-editor').focus();
-        };
-
-        // ------------------ Preview de imagem ------------------
-        window.previewImage = function(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview-img').src = e.target.result;
-                    document.getElementById('image-preview').classList.remove('hidden');
-                    document.getElementById('image-upload').classList.add('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-        window.removeImage = function() {
-            document.getElementById('featured_image').value = '';
-            document.getElementById('image-preview').classList.add('hidden');
-            document.getElementById('image-upload').classList.remove('hidden');
-        };
     });
 </script>
-<style>
-#content-editor:empty:before {
-    content: attr(placeholder);
-    color: #9CA3AF;
-    pointer-events: none;
-}
-.dark #content-editor:empty:before { color: #6B7280; }
-#content-editor:focus:before { content: none; }
-</style>
 @endpush
+@endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Associacao;
 use App\Http\Controllers\Controller;
 use App\Models\PerfilModel;
 use App\Models\User;
+use App\Models\UserPerfilModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -40,15 +41,25 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+
+        $authuser = auth()->user(); // pega o usuário logado
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => $request->status,
             'telefone' => $request->telefone,
+            'association_id' => $authuser->association_id
         ]);
 
-        $user->perfis()->attach($request->role);
+        // Atribuir perfil ao usuário
+        UserPerfilModel::create([
+            'user_id' => $user->id,
+            'perfil_id' => $request->role,
+            'is_atual' => 1,
+            'status' => 1,
+        ]);
 
         return redirect()->route('associacao.users.index')->with('success', 'Usuário criado com sucesso!');
     }

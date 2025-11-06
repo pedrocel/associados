@@ -317,4 +317,15 @@ class Association extends Model
             }
         });
     }
+
+    public function pages(): HasMany
+{
+    return $this->hasMany(AssociationPage::class);
+}
+
+public function getHomePage()
+{
+    return $this->pages()->where('is_home', true)->where('is_published', true)->first();
+}
+
 }

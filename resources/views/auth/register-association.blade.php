@@ -284,12 +284,13 @@
     <header class="relative z-10 p-4 lg:p-6">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="fas fa-bolt text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">AssociaçõesPro</h1>
-                    <p class="text-sm text-gray-600">Sistema de Gestão</p>
+            <div class="flex items-center gap-3 animate-fade-in">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary-600">
+                        <i data-lucide="users" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+                        AssociaMe
+                    </h1>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
