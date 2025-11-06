@@ -747,7 +747,7 @@
             </div>
             
             <div class="border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-gray-400">
-                <p>&copy; 2024 AssociaMe. Todos os direitos reservados.</p>
+                <p>&copy; 2025 AssociaMe. Todos os direitos reservados.</p>
                 <div class="flex gap-6">
                     <a href="#" class="hover:text-primary-500 transition-colors">Privacidade</a>
                     <a href="#" class="hover:text-primary-500 transition-colors">Termos</a>
