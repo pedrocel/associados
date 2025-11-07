@@ -10,7 +10,6 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/webhook-global', [WebhookController::class, 'global'])->name('webhook.kiwify');
-
-
+Route::post('/sfbank/webhook/cobrancas', [WebhookController::class, 'handleSFBank'])->name('sfbank.webhook.cobrancas');
 
 

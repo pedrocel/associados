@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'sfbank' => [
+        'base_url' => env('SFBANK_BASE_URL'),
+        'app_name' => env('SFBANK_APP_NAME'),
+        'auth_user' => env('SFBANK_AUTH_USER'),
+        'auth_secret' => env('SFBANK_AUTH_SECRET'),
+        'webhook_secret' => env('SFBANK_WEBHOOK_SECRET'),
+    ],
 
 ];

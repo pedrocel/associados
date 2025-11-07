@@ -1,167 +1,47 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compra Realizada com Sucesso!</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        
-        <!-- Success Header -->
-        <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check text-green-600 text-3xl"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Compra Realizada com Sucesso!</h1>
-            <p class="text-gray-600">Obrigado por escolher nossos serviços</p>
-        </div>
+@extends('layouts.app')
 
-        <!-- Order Details -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">Detalhes da Compra</h2>
-            
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Customer Info -->
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-3">Dados do Cliente</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Nome:</span>
-                            <span class="font-medium">{{ $sale->user->name }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">E-mail:</span>
-                            <span class="font-medium">{{ $sale->user->email }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Telefone:</span>
-                            <span class="font-medium">{{ $sale->user->telefone }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Plan Info -->
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-3">Plano Adquirido</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Plano:</span>
-                            <span class="font-medium">{{ $sale->plan->name }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Recorrência:</span>
-                            <span class="font-medium capitalize">{{ $sale->plan->recurrence === 'Monthly' ? 'Mensal' : 'Anual' }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Valor:</span>
-                            <span class="font-medium text-primary-600">R$ {{ number_format($sale->total_price, 2, ',', '.') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+@section('content')
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-6">Pedido Confirmado!</h1>
+    
+    @if ($sale->status === 'awaiting_payment' && $transaction)
+        <div class="bg-white shadow-xl rounded-lg p-8">
+            <p class="text-lg mb-4">Sua compra do plano <strong>{{ $sale->plan->name }}</strong> foi registrada com sucesso.</p>
+            <p class="text-2xl font-semibold text-purple-600 mb-6">Total: R$ {{ number_format($sale->total_price, 2, ',', '.') }}</p>
 
-        <!-- Payment Status -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Status do Pagamento</h2>
+            <h2 class="text-xl font-bold border-b pb-2 mb-4">Detalhes do Pagamento ({{ ucfirst($sale->payment_method) }})</h2>
             
-            <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div class="flex items-center">
-                    <i class="fas fa-clock text-yellow-600 mr-3"></i>
-                    <div>
-                        <p class="font-medium text-yellow-800">Aguardando Pagamento</p>
-                        <p class="text-sm text-yellow-600">Método: {{ ucfirst(str_replace('_', ' ', $sale->payment_method)) }}</p>
+            <p class="mb-4">O pagamento deve ser efetuado até: <strong>{{ \Carbon\Carbon::parse($transaction->details['dataVencimento'])->format('d/m/Y') }}</strong></p>
+
+            @if ($sale->payment_method === 'boleto')
+                <div class="space-y-4">
+                    <p class="text-gray-700">Utilize a linha digitável abaixo para pagar em seu banco ou lotérica:</p>
+                    <div class="bg-gray-100 p-4 rounded font-mono break-all">
+                        {{ $transaction->details['linhaDigitavel'] ?? 'Linha Digitável indisponível' }}
                     </div>
+                    <p class="text-sm text-gray-500">Código de Barras: {{ $transaction->details['codigoDeBarra'] ?? 'N/A' }}</p>
+                    
+                    {{-- O URL de pagamento (urlPagamento) também pode ser recuperado da resposta para link de impressão --}}
+                    <a href="#" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Imprimir Boleto</a>
+
                 </div>
-                <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-                    Pendente
-                </span>
-            </div>
             
-            @if($sale->payment_method === 'pix')
-                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p class="text-blue-800 font-medium mb-2">Instruções para pagamento PIX:</p>
-                    <p class="text-blue-700 text-sm">O código PIX será enviado para seu e-mail em alguns minutos.</p>
-                </div>
-            @elseif($sale->payment_method === 'boleto')
-                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p class="text-blue-800 font-medium mb-2">Instruções para pagamento do Boleto:</p>
-                    <p class="text-blue-700 text-sm">O boleto será enviado para seu e-mail e tem vencimento em 3 dias úteis.</p>
+            @elseif ($sale->payment_method === 'pix')
+                <div class="text-center">
+                    <p class="text-gray-700 mb-4">Escaneie o QR Code ou use o código Pix Copia e Cola:</p>
+                    
+                    {{-- A rota vai buscar a imagem binária na SFBank --}}
+                    <img src="{{ route('checkout.pix.qrcode', $sale) }}" alt="QR Code Pix" class="mx-auto border p-2 mb-6" style="width: 250px; height: 250px;">
+                    
+                    <p class="font-semibold mb-2">Código Pix (Copia e Cola):</p>
+                    <textarea class="w-full border p-4 bg-gray-100 rounded font-mono text-sm break-all" rows="4" readonly>{{ $transaction->details['qrCode'] ?? 'Código indisponível' }}</textarea>
                 </div>
             @endif
+
+            <p class="mt-8 text-sm text-gray-500">O status do seu pedido será atualizado automaticamente assim que o pagamento for confirmado (via Webhook).</p>
         </div>
-
-        <!-- Next Steps -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Próximos Passos</h2>
-            
-            <div class="space-y-4">
-                <div class="flex items-start">
-                    <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                        <span class="text-primary-600 text-sm font-semibold">1</span>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-900">Confirmação por E-mail</p>
-                        <p class="text-sm text-gray-600">Você receberá um e-mail com os detalhes da compra e instruções de pagamento.</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-start">
-                    <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                        <span class="text-primary-600 text-sm font-semibold">2</span>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-900">Processamento do Pagamento</p>
-                        <p class="text-sm text-gray-600">Após a confirmação do pagamento, seu acesso será liberado automaticamente.</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-start">
-                    <div class="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                        <span class="text-primary-600 text-sm font-semibold">3</span>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-900">Enviar documentação</p>
-                        <p class="text-sm text-gray-600">Para finalizar seu registro de associado você deve enviar a documentação solicitada pela associação.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
-            <a href="/" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center">
-                <i class="fas fa-home mr-2"></i>
-                Voltar ao Início
-            </a>
-            <a href="https://wa.me/5511999999999?text=Olá,+preciso+de+suporte"
-            target="_blank"
-            class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-center flex items-center justify-center">
-                <i class="fab fa-whatsapp mr-2"></i>
-                Contatar Suporte
-            </a>
-        </div>
-
-    </div>
-</body>
-</html>
+    @else
+        <p class="text-lg text-red-500">Detalhes da transação não encontrados ou status inválido.</p>
+    @endif
+</div>
+@endsection

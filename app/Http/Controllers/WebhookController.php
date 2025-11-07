@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sale;
 use App\Models\User;
 use App\Models\Subscription;
 use App\Models\SubscriptionModel;
@@ -12,112 +13,44 @@ use Illuminate\Support\Facades\Hash;
 
 class WebhookController extends Controller
 {
-    public function handle(Request $request)
+    public function handleSFBank(Request $request)
     {
-        // Armazena o log do webhook
+        // 1. Armazena o log do webhook (Usando WebhookLog)
+        $cobrancaData = $request->input('cobranca');
+        $eventType = $request->input('eventType');
+
         $log = WebhookLog::create([
-            'event' => $request->event ?? 'unknown',
+            'event' => "SFBANK - {$eventType} - " . ($cobrancaData['status'] ?? 'N/A'),
             'payload' => $request->all(),
         ]);
 
         try {
-            // Verifica o evento
-            if ($request->event === 'purchase_approved') {
-                $this->processPixPago($request->all());
-                $log->update(['status' => 'processed']);
-            } else {
-                $log->update(['status' => 'ignored']);
+            // 2. Validação da Autenticidade do Webhook
+            if (!$this->validateSFBankWebhook($request)) {
+                $log->update(['status' => 'failed', 'error_message' => 'Unauthorized Access']);
+                return response()->json(['message' => 'Unauthorized'], 401);
             }
-
-            return response()->json(['message' => 'Webhook received'], 200);
-        } catch (\Exception $e) {
-            // Atualiza o log com o erro
-            $log->update([
-                'status' => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
-
-            return response()->json(['message' => 'Webhook processing failed'], 500);
-        }
-    }
-
-    protected function processPixPago(array $data)
-    {
-        // Verifica se o usuário já existe
-        $user = User::create([
-            'name' => $data['data']['customer']['email'],
-            'email' => $data['data']['customer']['email'],
-            'password' => Hash::make(123456789),
-        ]);
-
-        // Cria uma assinatura
-        SubscriptionModel::create([
-            'user_id' => $user->id,
-            'offer_id' => $data['data']['offer']['id'],
-            'status' => 'active',
-            'price' => $data['data']['offer']['price'],
-            'payment_method' => $data['data']['paymentMethodName'],
-            'paid_at' => now(),
-        ]);
-
-        UserPerfilModel::create([
-            'user_id' => $user->id,
-            'perfil_id' => 2,
-            'is_atual' => 1,
-            'status' => 1
-        ]);
-    }
-
-    public function kiwify(Request $request)
-    {
-        // Armazena o log do webhook
-        $log = WebhookLog::create([
-            'event' => $request->order_status ?? 'unknown',
-            'payload' => $request->all(),
-        ]);
-
-        try {
-            // Verifica o evento
-            if ($request->order_status === 'paid') {
-
-                // Verifica se o usuário já existe
-                $user = User::where('email', $request['Customer']['email'])->first();
-
-                // Se o usuário não existir, cria o usuário, a assinatura e o perfil
-                if (!$user) {
-                    $user = User::create([
-                        'name' => $request['Customer']['full_name'],
-                        'email' => $request['Customer']['email'],
-                        'password' => Hash::make(123456789),
-                    ]);
-
-                    // Cria o perfil para o novo usuário
-                    UserPerfilModel::create([
-                        'user_id' => $user->id,
-                        'perfil_id' => 2,
-                        'is_atual' => 1,
-                        'status' => 1
-                    ]);
-                }
-
-                // Cria ou atualiza a assinatura
-                SubscriptionModel::create([
-                    'user_id' => $user->id,
-                    'offer_id' => 1,
-                    'status' => 'active',
-                    'price' => 10,
-                    'payment_method' => $request['payment_method'],
-                    'paid_at' => now(),
-                ]);
             
-                // Atualiza o log como processado
+            // Garante que temos os dados essenciais
+            if (!$cobrancaData || !$cobrancaData['idIntegracao']) {
+                 $log->update(['status' => 'failed', 'error_message' => 'Dados essenciais da cobranca ausentes.']);
+                 return response()->json(['message' => 'Dados da cobranca ausentes'], 400);
+            }
+
+            $statusSFBank = $cobrancaData['status'] ?? '';
+            
+            // 3. Verifica o Evento de Liquidação (Pagamento Confirmado)
+            // eventType = L (Liquidação), status = Pago
+            if ($eventType === 'L' && $statusSFBank === 'Pago') {
+                $this->processSFBankLiquidation($cobrancaData, $request->input('pagamento'));
                 $log->update(['status' => 'processed']);
             } else {
-                // Caso o status não seja "paid", marca como ignorado
+                // Outros status (Aguardando Pagamento, Cancelado, etc.)
                 $log->update(['status' => 'ignored']);
             }
 
             return response()->json(['message' => 'Webhook received'], 200);
+
         } catch (\Exception $e) {
             // Atualiza o log com o erro
             $log->update([
@@ -127,6 +60,78 @@ class WebhookController extends Controller
 
             return response()->json(['message' => 'Webhook processing failed'], 500);
         }
+    }
+    
+    /**
+     * Lógica para processar o pagamento liquidado (status "Pago")
+     */
+    protected function processSFBankLiquidation(array $cobrancaData, ?array $pagamentoData)
+    {
+        // O ID de Integração é o que usamos para buscar a Venda: SAAS-SALE-ID
+        $idIntegracao = $cobrancaData['idIntegracao'];
+        $sfbankChargeId = $cobrancaData['id'];
+
+        // Extrai o ID da Venda (assumindo o prefixo 'SAAS-SALE-')
+        $saleId = (int) str_replace('SAAS-SALE-', '', $idIntegracao);
+        
+        // Use a model Sale do seu sistema (substitua pelo nome correto, se for diferente de Sale)
+        // Certifique-se de importar a model Sale no topo do arquivo.
+        $sale = Sale::findOrFail($saleId); // Assumindo namespace padrão
+
+        // Garante que a venda ainda não foi paga para evitar reprocessamento
+        if ($sale->status !== 'paid') {
+            
+            // 1. Atualizar a Venda
+            $sale->update([
+                'status' => 'paid',
+                'payment_date' => now(), 
+            ]);
+
+            // 2. Atualizar a Transação (Busca pelo sfbank_charge_id nos detalhes)
+            $transaction = $sale->transactions()
+                                ->whereJsonContains('details->sfbank_charge_id', $sfbankChargeId)
+                                ->latest()->first();
+
+            if ($transaction) {
+                $transaction->update([
+                    'status' => 'paid',
+                    'details' => array_merge($transaction->details, [
+                        'payment_details_sfbank' => $pagamentoData,
+                        'payment_confirmed_at' => now(),
+                    ]),
+                ]);
+            }
+            
+            // 3. Atualizar o Usuário/Ativação
+            $user = $sale->user;
+            
+            // Substitua 'documentation_pending' pelo seu status inicial se for diferente
+            if ($user->status === 'documentation_pending' || $user->status === 'awaiting_payment') {
+                $user->update(['status' => 'ativo']);
+
+                // Ativar perfis (ID 3 para Cliente/Membro no seu fluxo)
+                UserPerfilModel::where('user_id', $user->id)
+                    ->where('perfil_id', 3) // Assumindo 3 é o ID de Cliente/Membro
+                    ->update(['status' => 1]); 
+            }
+        }
+    }
+
+    /**
+     * Valida a autenticidade do Webhook SFBank (deve ser o mesmo da config/services.php)
+     */
+    private function validateSFBankWebhook(Request $request): bool
+    {
+        $expectedKey = config('services.sfbank.webhook_secret');
+        $receivedKey = $request->header('Authorization');
+
+        // A chave deve ser comparada com a que você configurou no .env
+        // É crucial que essa chave seja um valor secreto e não o valor 'auth_key' literal.
+        if ($receivedKey === $expectedKey && !empty($expectedKey)) {
+            return true;
+        }
+
+        return false;
     }
 }
 

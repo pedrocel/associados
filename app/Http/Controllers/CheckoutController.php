@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Association;
 use App\Models\PerfilModel;
 use App\Models\Plan;
 use App\Models\Sale;
 use App\Models\User;
+use App\Services\SFBankService;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -21,87 +24,216 @@ class CheckoutController extends Controller
         return view('checkout', compact('plan'));
     }
 
-    public function storeSale(Request $request, string $hash_id)
+    public function storeSale(Request $request, string $hash_id, SFBankService $sfBankService)
     {
         $plan = Plan::where('hash_id', $hash_id)->firstOrFail();
-        // Validação condicional para CPF/CNPJ
-        // Exemplo:
-        // if ($request['client_type'] === 'pf') {
-        //     $request['document'] = array_merge($request['document'], ['cpf']);
-        // } else {
-        //     $request['document'] = array_merge($request['document'], ['cnpj']);
-        // }
-        // 2. Criação do Usuário
-        $user = User::create([
-            'association_id' => $plan->association_id,
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => Hash::make($request['password']),
-            'tipo' =>  'membro',
-            'documento' => $request['document'],
-            'telefone' => $request['phone'],
-            'status' => 'documentation_pending',
-        ]);
-
-        // 2. Atribuição do Perfil 'Cliente' (ID 2)
-        $perfilClienteId = 3; // ID do perfil 'Cliente'
-        $perfilCliente = PerfilModel::find($perfilClienteId);
-
-        if ($perfilCliente) {
-            // Usa o método adicionarPerfil da sua model User
-            $user->adicionarPerfil($perfilCliente->id, true, 1); // Define como atual e ativo
-        } else {
-            // Opcional: logar um erro ou lançar uma exceção se o perfil não for encontrado
-            \Log::error("Perfil 'Cliente' (ID: {$perfilClienteId}) não encontrado para o usuário {$user->id}.");
-        }
-
-        //eu sabia que ue n tava maluco//
-
-        // 3. Criação da Venda
-        $sale = Sale::create([
-            'association_id' => $plan->association_id,
-            'plan_id' => $plan->id,
-            'user_id' => $user->id,
-            'total_price' => $plan->total_price,
-            'payment_method' => $request['payment_method'],
-            'status' => 'awaiting_payment',
-        ]);
-
-        // 4. Lógica para o método de pagamento
-        $transactionDetails = [];
-        switch ($request['payment_method']) {
-            case 'credit_card':
-                // TODO: Processar cartão de crédito (gateway de pagamento)
-                // Exemplo: $transactionDetails = Gateway::processCreditCard($request->input('card_data'));
-                break;
-            case 'pix':
-                // TODO: Gerar um código Pix (usando um SDK)
-                // Exemplo: $transactionDetails = Gateway::generatePix($sale->total_price);
-                break;
-            case 'boleto':
-                // TODO: Gerar um boleto
-                // Exemplo: $transactionDetails = Gateway::generateBoleto($sale->total_price);
-                break;
-        }
-
-        // 5. Criação da Transação
-        $transaction = $sale->transactions()->create([
-            'amount' => $sale->total_price,
-            'payment_method' => $sale->payment_method,
-            'status' => 'created',
-            'details' => $transactionDetails,
-        ]);
         
-        // Redireciona para uma página de sucesso
-        return redirect()->route('checkout.success', $sale->id)
-                         ->with('success', 'Sua compra foi registrada com sucesso!');
+        // Assumindo que a Association tem o ID da conta SFBank salvo (sfbank_account_id)
+        $association = $plan->association; 
+        $contaId = $association->sfbank_account_id; // O hash de 36 caracteres.
+        
+        if (!$contaId) {
+             return back()->withErrors(['error' => 'Conta digital da associação não configurada para cobrança.'])->withInput();
+        }
+
+        // NOVO: Adicione validação para campos de endereço e data de nascimento 
+        // (necessários para o payload da SFBank)
+
+        try {
+            DB::beginTransaction();
+
+            $user = User::create([
+                'association_id' => $association->id,
+                'name' => $request['name'],
+                'email' => $request['email'],
+                'password' => Hash::make($request['password']),
+                'tipo' =>  'membro',
+                'documento' => $request['document'],
+                'telefone' => $request['phone'],
+                'status' => 'documentation_pending',
+            ]);
+
+            $perfilClienteId = 3;
+            $perfilCliente = PerfilModel::find($perfilClienteId);
+            if ($perfilCliente) {
+                $user->adicionarPerfil($perfilCliente->id, true, 1);
+            } else {
+                \Log::error("Perfil 'Cliente' (ID: {$perfilClienteId}) não encontrado para o usuário {$user->id}.");
+            }
+
+
+            $sale = Sale::create([
+                'association_id' => $association->id,
+                'plan_id' => $plan->id,
+                'user_id' => $user->id,
+                'total_price' => $plan->total_price,
+                'payment_method' => $request['payment_method'],
+                'status' => 'awaiting_payment',
+            ]);
+
+            $chargeId = null;
+            $chargeResponse = null;
+            $payload = $this->buildChargePayload($request, $user, $association, $sale);
+
+            switch ($request['payment_method']) {
+                case 'pix':
+                    $chargeResponse = $sfBankService->createPixCharge($contaId, $payload);
+                    $chargeId = $chargeResponse['id'] ?? null;
+                    break;
+                case 'boleto':
+                    $chargeResponse = $sfBankService->createBoletoCharge($contaId, $payload);
+                    $chargeId = $chargeResponse['id'] ?? null;
+                    break;
+                case 'credit_card':
+                    // TODO: Integração de Cartão de Crédito
+                    break;
+            }
+
+            if ($chargeId === null && in_array($request['payment_method'], ['pix', 'boleto'])) {
+                 throw new \Exception("Falha na API SFBank: ID da cobrança não retornado.");
+            }
+            
+            $transaction = $sale->transactions()->create([
+                'amount' => $sale->total_price,
+                'payment_method' => $sale->payment_method,
+                'status' => 'created',
+                // Armazena dados essenciais para consulta e exibição
+                'details' => [
+                    'sfbank_charge_id' => $chargeId,
+                    'qrCode' => $chargeResponse['qrCode'] ?? null, // Para PIX (código Copia e Cola)
+                    'linhaDigitavel' => $chargeResponse['linhaDigitavel'] ?? null, // Para Boleto
+                    'codigoDeBarra' => $chargeResponse['codigoDeBarra'] ?? null, // Para Boleto
+                    'dataVencimento' => $chargeResponse['dataVencimento'] ?? null,
+                ],
+            ]);
+            
+            DB::commit();
+
+            return redirect()->route('checkout.success', $sale->id)
+                             ->with('success', 'Sua cobrança foi gerada com sucesso! Prossiga para o pagamento.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error("Erro no Checkout/SFBank: " . $e->getMessage());
+
+            return back()
+                ->withErrors(['error' => 'Erro ao processar o pagamento. Contate o suporte.'])
+                ->withInput();
+        }
+    }
+
+    private function getSacadorData(Association $association): array
+    {
+        // Assumindo que a Association foi cadastrada como PJ (seu controller anterior sugere isso)
+        $cleanDocumento = preg_replace('/[^0-9]/', '', $association->documento);
+        $cleanTelefone = preg_replace('/[^0-9]/', '', $association->telefone);
+        $representanteCpf = preg_replace('/[^0-9]/', '', $association->representante_cpf);
+        
+        return [
+            "cnpj" => $cleanDocumento,
+            "nome" => $association->nome,
+            "email" => $association->email,
+            "endereco" => [
+                "cep" => preg_replace('/[^0-9]/', '', $association->cep),
+                "rua" => $association->endereco,
+                "bairro" => $association->bairro,
+                "cidade" => $association->cidade,
+                "estado" => $association->estado,
+                "numero" => $association->numero,
+                "complemento" => $association->complemento,
+            ],
+            "fantasia" => $association->nome,
+            "telefones" => [$cleanTelefone],
+            "pessoaTipo" => "J",
+            "representante" => [
+                "cpf" => $representanteCpf,
+                "nome" => $association->representante_nome,
+                "email" => $association->representante_email,
+                // Assumindo que endereço e data do representante são o mesmo da Associação para fins de Sacador
+                "endereco" => [
+                    "cep" => preg_replace('/[^0-9]/', '', $association->cep),
+                    "rua" => $association->endereco,
+                    "bairro" => $association->bairro,
+                    "cidade" => $association->cidade,
+                    "estado" => $association->estado,
+                    "numero" => $association->numero,
+                    "complemento" => $association->complemento,
+                ],
+                "pessoaTipo" => "F",
+                "dataNascimento" => '1980-01-01T00:00:00-03:00', // Padrão, se não tiver no DB
+            ]
+        ];
+    }
+    
+    // NOVO: Função para montar o Pagador e o Payload completo
+    private function buildChargePayload(Request $request, User $user, Association $association, Sale $sale): array
+    {
+        $cleanDocumentPagador = preg_replace('/[^0-9]/', '', $user->documento);
+        $cleanPhonePagador = preg_replace('/[^0-9]/', '', $user->telefone);
+        
+        $pagador = [
+            "pessoaTipo" => strlen($cleanDocumentPagador) === 11 ? "F" : "J",
+            "cpf" => strlen($cleanDocumentPagador) === 11 ? $cleanDocumentPagador : null,
+            "cnpj" => strlen($cleanDocumentPagador) !== 11 ? $cleanDocumentPagador : null,
+            "nome" => $user->name,
+            "email" => $user->email,
+            "endereco" => [
+                "cep" => preg_replace('/[^0-9]/', '', $request['cep']),
+                "rua" => $request['address'],
+                "bairro" => $request['neighborhood'] ?? '', // Assumindo que este campo está no formulário
+                "cidade" => $request['city'] ?? '', // Assumindo que este campo está no formulário
+                "estado" => $request['state'] ?? '', // Assumindo que este campo está no formulário
+                "numero" => $request['number'],
+                "complemento" => $request['complement'] ?? null
+            ],
+            "telefones" => [$cleanPhonePagador],
+            "dataNascimento" => \Carbon\Carbon::parse($request['birth_date'])->format('Y-m-d\T00:00:00-03:00'),
+        ];
+        
+        return [
+            "valor" => number_format($sale->total_price, 2, '.', ''),
+            "codTipo" => $request['payment_method'] === 'pix' ? "P" : "B",
+            "pagador" => $pagador,
+            "sacador" => $this->getSacadorData($association),
+            "descricao" => "Pagamento do Plano: {$sale->plan->name} - Venda #{$sale->id}",
+            "valorJuros" => 0, 
+            "valorMulta" => 0, 
+            "idIntegracao" => "SAAS-SALE-{$sale->id}",
+            "dataVencimento" => now()->addDays(2)->format('Y-m-d\T00:00:00-03:00'),
+        ];
     }
 
     public function showSuccess(Sale $sale)
     {
-        // Certifica que a venda existe e carrega os dados necessários
-        $sale->load(['user', 'plan', 'association']);
+        // Carrega a última transação para mostrar os detalhes do pagamento
+        $sale->load(['user', 'plan', 'association', 'transactions']);
+        $transaction = $sale->transactions->last(); 
         
-        return view('checkout-success', compact('sale'));
+        return view('checkout-success', compact('sale', 'transaction'));
+    }
+
+    public function showPixQrCode(Sale $sale, SFBankService $sfBankService)
+    {
+        // Pega a transação mais recente de PIX
+        $transaction = $sale->transactions()->where('payment_method', 'pix')->latest()->firstOrFail();
+        
+        $contaId = $sale->association->sfbank_account_id;
+        $chargeId = $transaction->details['sfbank_charge_id'] ?? null;
+        
+        if (!$chargeId || !$contaId) {
+            abort(404, 'Dados do PIX não encontrados.');
+        }
+
+        try {
+            $imageBinary = $sfBankService->getPixQrCodeImage($contaId, $chargeId);
+
+            // Retorna o binário da imagem com o cabeçalho correto
+            return response($imageBinary, 200)
+                ->header('Content-Type', 'image/png');
+
+        } catch (\Exception $e) {
+            \Log::error("Erro ao carregar QR Code: " . $e->getMessage());
+            abort(500, 'Não foi possível carregar a imagem do QR Code. Verifique o log.');
+        }
     }
 }
