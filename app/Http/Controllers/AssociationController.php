@@ -20,34 +20,101 @@ class AssociationController extends Controller
         return view('auth.register-association');
     }
 
-    public function register(StoreAssociationRequest $request)
+    public function register(StoreAssociationRequest $request, SFBankService $sfBankService) // Injetar o Serviço
     {
 
         try {
             DB::beginTransaction();
 
-            // Criar associação
+            // 1. Criar associação
             $association = $this->createAssociation($request);
 
-            // Criar usuário responsável
+            // 2. Criar usuário responsável
             $user = $this->createUser($request, $association);
 
-            // Atribuir perfil "Dono de Associação"
+            // 3. Montar e Enviar Payload para SFBank
+            $payload = $this->buildSFBankPayload($request, $association);
+            
+            // AQUI É O PONTO CRÍTICO: Se esta chamada falhar, uma exceção será lançada.
+            // O catch abaixo irá capturá-la e fazer o DB::rollBack().
+            $sfBankResponse = $sfBankService->createDigitalAccount($payload);
+
+            // 4. Salvar os dados da conta digital
+            // Supondo que você criou um modelo chamado AccountAssociation
+            $this->createAccountAssociation($association->id, $sfBankResponse);
+
+            // 5. Atribuir perfil "Dono de Associação"
             $this->atribuirPerfilDonoAssociacao($user);
 
             DB::commit();
 
             return redirect()
                 ->route('login')
-                ->with('success', 'Associação cadastrada com sucesso! Aguarde a aprovação para fazer login.');
+                ->with('success', 'Associação cadastrada com sucesso! Conta digital criada. Aguarde a aprovação.');
 
         } catch (\Exception $e) {
             DB::rollBack();
             
+            // Retorna a mensagem de erro da SFBank se for o caso
             return back()
-                ->withErrors(['error' => $e.'Erro ao cadastrar associação. Tente novamente.'])
+                ->withErrors(['error' => 'Erro ao cadastrar. Falha na criação da Conta Digital.'])
                 ->withInput();
         }
+    }
+
+    private function buildSFBankPayload(Request $request, Association $association): array
+    {
+        $payload = [
+            // Dados da Associação (CNPJ)
+            "pessoaTipo" => "J",
+            "nome" => $request->nome_associacao,
+            "cnpj" => preg_replace('/[^0-9]/', '', $request->documento_associacao), // Limpar pontuação
+            "taxas" => [
+                ["codigo" => "B", "valor" => "4.99"],
+                ["codigo" => "P", "valor" => "4.99"],
+                // Adicione outras taxas se necessário
+            ],
+            
+            // Dados do Representante
+            "representante" => [
+                "pessoaTipo" => "F",
+                "cpf" => preg_replace('/[^0-9]/', '', ($request->tipo === 'pf' ? $request->documento_responsavel : $request->representante_cpf)),
+                "rg" => null, // Assumindo que RG não está no formulário, ajuste se necessário
+                "nome" => ($request->tipo === 'pf' ? $request->nome_responsavel : $request->representante_nome),
+                "email" => ($request->tipo === 'pf' ? $request->email_responsavel : $request->representante_email),
+                "dataNascimento" => $request->data_nascimento_responsavel ?? '2000-01-01', // Inclua este campo no formulário
+                "endereco" => [
+                    "rua" => $request->endereco,
+                    "bairro" => $request->bairro,
+                    "cep" => preg_replace('/[^0-9]/', '', $request->cep),
+                    "cidade" => $request->cidade,
+                    "estado" => $request->estado,
+                    "numero" => $request->numero,
+                    "complemento" => $request->complemento,
+                ],
+                "telefones" => [
+                    preg_replace('/[^0-9]/', '', ($request->tipo === 'pf' ? $request->telefone_responsavel : $request->representante_telefone)),
+                ]
+            ]
+        ];
+
+        return $payload;
+    }
+
+    private function createAccountAssociation(int $associationId, array $sfBankResponse): void
+    {
+        // **Você precisará adaptar isso** baseado no retorno real da API da SFBank.
+        // Assumindo que a resposta vem com 'account_number' e 'branch_number'
+        
+        // Exemplo: AccountAssociation::create([
+        //     'association_id' => $associationId,
+        //     'account_number' => $sfBankResponse['conta'],
+        //     'branch_number' => $sfBankResponse['agencia'],
+        //     'status' => 'ativa', // ou o status retornado pela API
+        //     'response_data' => json_encode($sfBankResponse), // Salvar o retorno completo para auditoria
+        // ]);
+        
+        // Se este modelo/tabela não existir, o Eloquent lançará um erro, causando o rollback.
     }
 
     private function getValidationRules($tipo): array

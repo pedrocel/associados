@@ -55,6 +55,8 @@ class CheckoutController extends Controller
             \Log::error("Perfil 'Cliente' (ID: {$perfilClienteId}) não encontrado para o usuário {$user->id}.");
         }
 
+        //eu sabia que ue n tava maluco//
+
         // 3. Criação da Venda
         $sale = Sale::create([
             'association_id' => $plan->association_id,
