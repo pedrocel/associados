@@ -18,6 +18,7 @@ class WebhookController extends Controller
         // 1. Armazena o log do webhook (Usando WebhookLog)
         $cobrancaData = $request->input('cobranca');
         $eventType = $request->input('eventType');
+        
 
         $log = WebhookLog::create([
             'event' => "SFBANK - {$eventType} - " . ($cobrancaData['status'] ?? 'N/A'),
